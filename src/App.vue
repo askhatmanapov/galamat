@@ -4,7 +4,7 @@
     <!-- <p>{{ extractedText }}</p> -->
     <div>
       <table v-if="res1">
-        <caption>{{ name }}</caption>
+        <caption>{{ name }}: {{ age }}г</caption>
         <tbody>
           <tr>
             <th>Компонент</th>
@@ -71,6 +71,7 @@ export default {
     return {
       extractedText: '',
       name: '',
+      age: '',
       size: '',
       res1: '',
       res2: '',
@@ -117,6 +118,15 @@ export default {
                 id++;
               }
 
+              for (let i = 0; i<this.size; i++){
+                if(this.extractedText[i]=='Ж' && this.extractedText[i+1] == 'ы' && this.extractedText[i+2]=='н' && this.extractedText[i+3] == 'ы' && this.extractedText[i+4]=='с'){
+                  id = i - 11;
+                }
+              }
+              while (this.extractedText[id+1] != 'Ж' && this.extractedText[id+2] != 'ы' && this.extractedText[id+3] != 'н') {
+                this.age = this.age + this.extractedText[id]
+                id++;
+              }
 
               let n = 0
               for (let i = 0; i<this.size; i++){
