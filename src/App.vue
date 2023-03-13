@@ -3,7 +3,7 @@
     <div class="upload">
       <input type="file" @change="handleFileSelect" />
     </div>
-    <div class="pdf" v-if="res1">
+    <div class="pdf" v-if="ttg">
       <table>
         <caption>{{ name }}: {{ age }}г</caption>
         <tbody>
