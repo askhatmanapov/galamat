@@ -15,60 +15,87 @@
           </tr>
           <tr>
             <td>ТТГ</td>
-            <td>{{ ttg }}</td>
+            <td @click="editttg">{{ ttg }} мкМЕ/мл</td>
             <td>0,40 - 3,77</td>
-            <td></td>
+            <td :class="color[0]">{{ comments[0] }}</td>
           </tr>
           <tr>
             <td>Свободный Т3</td>
-            <td>{{t3}}</td>
+            <td>{{ t3 }} пг/мл</td>
             <td>2,00 - 4,40</td>
-            <td></td>
+            <td :class="color[1]">{{ comments[1] }}</td>
           </tr>
           <tr>
             <td>Свободный Т4</td>
-            <td>{{t4}}</td>
+            <td>{{t4}} нг/дл</td>
             <td>1,00 - 1,70</td>
-            <td></td>
+            <td :class="color[2]">{{ comments[2] }}</td>
           </tr>
           <tr>
             <td>Анти ТПО</td>
-            <td>{{tpo}}</td>
+            <td>{{tpo}} МЕ/мл</td>
             <td>0 - 34</td>
-            <td></td>
+            <td :class="color[3]">{{ comments[3] }}</td>
           </tr>
           <tr>
             <td>Анти ТГ</td>
-            <td>{{tg}}</td>
+            <td>{{tg}} МЕ/мл</td>
             <td>0 - 115</td>
-            <td></td>
+            <td :class="color[4]">{{ comments[4] }}</td>
           </tr>
           <tr>
             <td>ПСА общий</td>
-            <td>{{psao}}</td>
+            <td>{{psao}} нг/мл</td>
             <td>0,000 - 2,000</td>
-            <td></td>
+            <td :class="color[5]">{{ comments[5] }}</td>
           </tr>
           <tr>
             <td>Индекс свободного ПСА</td>
-            <td>{{ispsa}}</td>
+            <td>{{ispsa}} %</td>
             <td>выше 15</td>
-            <td></td>
+            <td :class="color[6]">{{ comments[6] }}</td>
           </tr>
           <tr>
             <td>ПСА свободный</td>
-            <td>{{psas}}</td>
+            <td>{{psas}} нг/мл</td>
             <td></td>
-            <td></td>
+            <td :class="color[7]">{{ comments[7] }}</td>
           </tr>
           <tr>
             <td>Тиреоглобулин</td>
-            <td>{{tireoglubin}}</td>
+            <td>{{tireoglubin}} нг/мл</td>
             <td>1,4 - 78</td>
-            <td></td>
+            <td :class="color[8]">{{ comments[8] }}</td>
           </tr>
         </tbody>
       </table>
+    </div>
+    <div class="report">
+      <div v-if="report1">
+        <h4>У Вас выявлены подозрения на Первичный гипотериоз</h4>
+        <p>Ответьте на следующие вопросы чтобы узнать к каким специалистам обратиться! Займет не более 2-х минут.</p>
+      </div>
+      <div v-if="report2">
+        <h4>У Вас выявлены подозрения на Субклинический гипотериоз</h4>
+        <p>Ответьте на следующие вопросы чтобы узнать к каким специалистам обратиться! Займет не более 2-х минут.</p>
+      </div>
+      <div v-if="report3">
+        <h4>У Вас выявлены подозрения на Центральный гипотериоз</h4>
+        <p>Ответьте на следующие вопросы чтобы узнать к каким специалистам обратиться! Займет не более 2-х минут.</p>
+      </div>
+      <div v-if="report4">
+        <h4>Необходима консультация нейрохирурга</h4>
+        <p>Ответьте на следующие вопросы чтобы узнать к каким специалистам обратиться! Займет не более 2-х минут.</p>
+      </div>
+      <div v-if="report5">
+        <h4>Возможна погрешность анализов</h4>
+        <p>Необходимо повторно сдать анализ гормонов щитовидной железы</p>
+      </div>
+    </div>
+    <div class="congrats">
+      <div v-if="report6">
+        <h4>Поздравляем! Все анализы в норме!</h4>
+      </div>
     </div>
     <div class="survey">
       <div class="q1" v-if="status==1">
@@ -210,6 +237,7 @@
 <script>
 import * as pdfjsLib from 'pdfjs-dist';
 const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry');
+import Swal from 'sweetalert2';
 
 export default {
   data() {
@@ -229,10 +257,34 @@ export default {
       tireoglubin: '',
       options: [],
       status: 0,
-      missing: 0
+      missing: 0,
+      comments: [],
+      color: [],
+      report1: false,
+      report2: false,
+      report3: false,
+      report4: false,
+      report5: false,
+      report6: false
     }
   },
   methods: {
+    async editttg() {
+      const { value: input } = await Swal.fire({
+        title: 'Введите новое значение "ТТГ"',
+        input: 'text',
+        inputValue: this.ttg,
+        inputValidator: (value) => {
+          if (!value) {
+            return 'Введите новое значение "ТТГ"';
+          }
+        },
+      });
+
+      if (input) {
+        this.ttg = input;
+      }
+    },
     reloadPage(){
       window.location.reload();
     },
@@ -249,7 +301,6 @@ export default {
       const file = event.target.files[0]
       const reader = new FileReader();
       reader.onload = () => {
-          this.status = this.status+1;
           const pdfData = new Uint8Array(reader.result);
           pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
           pdfjsLib.getDocument(pdfData).promise.then((pdf) => {
@@ -295,10 +346,24 @@ export default {
                   id = i + 8;
                 }
               }
-              while (n<12) {
+              while (n<4) {
                 this.ttg = this.ttg + this.extractedText[id]
                 id++;
                 n++;
+              }
+
+              this.ttgcomment = parseFloat(this.ttg.replace(',', '.'))
+              if (0.40 <= this.ttgcomment && this.ttgcomment <= 3.77) {
+                this.comments[0] = 'В норме'
+                this.color[0] = 'n'
+              }
+              else if(this.ttgcomment <= 0.40){
+                this.comments[0] = 'Ниже нормы'
+                this.color[0] = 'bn'
+              }
+              else if(3.77 <= this.ttgcomment){
+                this.comments[0] = 'Выше нормы'
+                this.color[0] = 'an'
               }
 
               for (let i = 0; i<this.size; i++){
@@ -307,10 +372,23 @@ export default {
                   n = 0;
                 }
               }
-              while (n<10) {
+              while (n<4) {
                 this.t3 = this.t3 + this.extractedText[id]
                 id++;
                 n++;
+              }
+              this.t3comment = parseFloat(this.t3.replace(',', '.'))
+              if (2.00 <= this.t3comment && this.t3comment <= 4.40) {
+                this.comments[1] = 'В норме'
+                this.color[1] = 'n'
+              }
+              else if(this.t3comment <= 2.00){
+                this.comments[1] = 'Ниже нормы'
+                this.color[1] = 'bn'
+              }
+              else if(4.40 <= this.t3comment){
+                this.comments[1] = 'Выше нормы'
+                this.color[1] = 'an'
               }
 
               for (let i = 0; i<this.size; i++){
@@ -319,10 +397,61 @@ export default {
                   n = 0;
                 }
               }
-              while (n<10) {
+              while (n<4) {
                 this.t4 = this.t4 + this.extractedText[id]
                 id++;
                 n++;
+              }
+              this.t4comment = parseFloat(this.t4.replace(',', '.'))
+              if (1.00 <= this.t4comment && this.t4comment <= 1.70) {
+                this.comments[2] = 'В норме'
+                this.color[2] = 'n'
+              }
+              else if(this.t4comment <= 1.00){
+                this.comments[2] = 'Ниже нормы'
+                this.color[2] = 'bn'
+              }
+              else if(1.70 <= this.t4comment){
+                this.comments[2] = 'Выше нормы'
+                this.color[2] = 'an'
+              }
+
+
+              if(this.color[0] == 'bn' && this.color[2] == 'bn'){
+                this.report3 = true
+                this.status = 1
+              }
+              else if(this.color[0] == 'bn' && this.color[2] == 'n'){
+                this.report4 = true
+                this.status = 1
+              }
+              else if(this.color[0] == 'bn' && this.color[2] == 'an'){
+                this.report5 = true;
+                this.status = 0
+              }
+              else if(this.color[0] == 'n' && this.color[2] == 'bn'){
+                this.report5 = true;
+                this.status = 0
+              }
+              else if(this.color[0] == 'n' && this.color[2] == 'n'){
+                this.status = 0;
+                this.report6 = true
+              }
+              else if(this.color[0] == 'n' && this.color[2] == 'an'){
+                this.report5 = true;
+                this.status = 0
+              }
+              else if(this.color[0] == 'an' && this.color[2] == 'bn'){
+                this.report1 = true;
+                this.status = 1
+              }
+              else if(this.color[0] == 'an' && this.color[2] == 'n'){
+                this.report2 = true;
+                this.status = 1
+              }
+              else if(this.color[0] == 'an' && this.color[2] == 'an'){
+                this.report4 = true;
+                this.status = 1
               }
 
               for (let i = 0; i<this.size; i++){
@@ -331,10 +460,23 @@ export default {
                   n = 0;
                 }
               }
-              while (n<8) {
+              while (n<3) {
                 this.tpo = this.tpo + this.extractedText[id]
                 id++;
                 n++;
+              }
+              this.tpocomment = parseFloat(this.tpo.replace(',', '.'))
+              if (0 <= this.tpocomment && this.tpocomment <= 34) {
+                this.comments[3] = 'В норме'
+                this.color[3] = 'n'
+              }
+              else if(this.tpocomment <= 0){
+                this.comments[3] = 'Ниже нормы'
+                this.color[3] = 'bn'
+              }
+              else if(34 <= this.tpocomment){
+                this.comments[3] = 'Выше нормы'
+                this.color[3] = 'an'
               }
 
               for (let i = 0; i<this.size; i++){
@@ -343,10 +485,23 @@ export default {
                   n = 0;
                 }
               }
-              while (n<8) {
+              while (n<3) {
                 this.tg = this.tg + this.extractedText[id]
                 id++;
                 n++;
+              }
+              this.tgcomment = parseFloat(this.tg.replace(',', '.'))
+              if (0 <= this.tgcomment && this.tgcomment <= 115) {
+                this.comments[4] = 'В норме'
+                this.color[4] = 'n'
+              }
+              else if(this.tgcomment <= 0){
+                this.comments[4] = 'Ниже нормы'
+                this.color[4] = 'bn'
+              }
+              else if(115 <= this.tgcomment){
+                this.comments[4] = 'Выше нормы'
+                this.color[4] = 'an'
               }
 
               for (let i = 0; i<this.size; i++){
@@ -355,10 +510,23 @@ export default {
                   n = 0;
                 }
               }
-              while (n<11) {
+              while (n<5) {
                 this.psao = this.psao + this.extractedText[id]
                 id++;
                 n++;
+              }
+              this.psaocomment = parseFloat(this.psao.replace(',', '.'))
+              if (0 <= this.psaocomment && this.psaocomment <= 2) {
+                this.comments[5] = 'В норме'
+                this.color[5] = 'n'
+              }
+              else if(this.psaocomment <= 0){
+                this.comments[5] = 'Ниже нормы'
+                this.color[5] = 'bn'
+              }
+              else if(2 <= this.psaocomment){
+                this.comments[5] = 'Выше нормы'
+                this.color[5] = 'an'
               }
 
               for (let i = 0; i<this.size; i++){
@@ -367,10 +535,19 @@ export default {
                   n = 0;
                 }
               }
-              while (n<7) {
+              while (n<5) {
                 this.ispsa = this.ispsa + this.extractedText[id]
                 id++;
                 n++;
+              }
+              this.ispsacomment = parseFloat(this.ispsa.replace(',', '.'))
+              if (15 <= this.ispsacomment) {
+                this.comments[6] = 'В норме'
+                this.color[6] = 'n'
+              }
+              else if(this.ispsacomment <= 15){
+                this.comments[6] = 'Ниже нормы'
+                this.color[6] = 'bn'
               }
 
               for (let i = 0; i<this.size; i++){
@@ -379,11 +556,13 @@ export default {
                   n = 0;
                 }
               }
-              while (n<10) {
+              while (n<5) {
                 this.psas = this.psas + this.extractedText[id]
                 id++;
                 n++;
               }
+              this.comments[7] = 'В норме'
+              this.color[7] = 'n'
 
               for (let i = 0; i<this.size; i++){
                 if(this.extractedText[i]=='б' && this.extractedText[i+1] == 'у' && this.extractedText[i+2]=='л' && this.extractedText[i+3]=='и'){
@@ -391,10 +570,23 @@ export default {
                   n = 0;
                 }
               }
-              while (n<11) {
+              while (n<5) {
                 this.tireoglubin = this.tireoglubin + this.extractedText[id]
                 id++;
                 n++;
+              }
+              this.tireoglubincomment = parseFloat(this.tireoglubin.replace(',', '.'))
+              if (1.4 <= this.tireoglubincomment && this.tireoglubincomment <= 78) {
+                this.comments[8] = 'В норме'
+                this.color[8] = 'n'
+              }
+              else if(this.tireoglubincomment <= 1.4){
+                this.comments[8] = 'Ниже нормы'
+                this.color[8] = 'bn'
+              }
+              else if(78 <= this.tireoglubincomment){
+                this.comments[8] = 'Выше нормы'
+                this.color[8] = 'an'
               }
             })
           });
@@ -408,7 +600,6 @@ export default {
 table{
   width: 50%;
   margin-top: 20px;
-  /* margin-left: 5%; */
   margin-right: 5%;
 }
 td, th{
@@ -421,5 +612,17 @@ td, th{
 }
 .alert{
   color: tomato;
+}
+.n{
+  color: green;
+}
+.bn, .an{
+  color: tomato;
+}
+.report{
+  color: lightcoral;
+}
+.congrats{
+  color: green;
 }
 </style>
